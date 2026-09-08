@@ -36,4 +36,4 @@ PERMISSIONS = {
     1073741824: "Manage Expressions",
     2147483648: "Use Application Commands",
     4294967296: "Request to Speak",
-    8589934592: "Manage Events
+    8589934592: "Manage Events",
