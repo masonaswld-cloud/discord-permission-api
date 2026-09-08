@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ PERMISSIONS = {
     512: "Stream",
     1024: "View Channel",
     2048: "Send Messages",
-    4096: "Send TTS",
+    4096: "Send TTS Messages",
     8192: "Manage Messages",
     16384: "Embed Links",
     32768: "Attach Files",
@@ -37,3 +37,39 @@ PERMISSIONS = {
     2147483648: "Use Application Commands",
     4294967296: "Request to Speak",
     8589934592: "Manage Events",
+}
+
+
+@app.route("/")
+def home():
+    return jsonify({
+        "status": "online",
+        "message": "Discord Permission API is running"
+    })
+
+
+@app.route("/permissions")
+def get_permissions():
+    return jsonify(PERMISSIONS)
+
+
+@app.route("/permission/<int:permission_id>")
+def get_permission(permission_id):
+    permission = PERMISSIONS.get(permission_id)
+
+    if permission is None:
+        return jsonify({
+            "error": "Permission not found"
+        }), 404
+
+    return jsonify({
+        "id": permission_id,
+        "name": permission
+    })
+
+
+if __name__ == "__main__":
+    import os
+
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
