@@ -24,7 +24,6 @@ PERMISSIONS = {
     65536: "Read Message History",
     131072: "Mention Everyone",
     262144: "Use External Emojis",
-    524288: "View Server Insights",
     1048576: "Connect",
     2097152: "Speak",
     4194304: "Mute Members",
@@ -41,7 +40,6 @@ PERMISSIONS = {
     8589934592: "Manage Events",
 }
 
-
 @app.route("/")
 def home():
     return jsonify({
@@ -49,18 +47,15 @@ def home():
         "message": "Discord Permission API is running"
     })
 
-
 @app.route("/role/<role_id>")
 def get_role_permissions(role_id):
     token = os.environ.get("DISCORD_BOT_TOKEN")
     guild_id = os.environ.get("DISCORD_GUILD_ID")
 
     if not token or not guild_id:
-        return jsonify({
-            "error": "API is not configured"
-        }), 500
+        return jsonify({"error": "API is not configured"}), 500
 
-    url = f"https://discord.com/api/v10/guilds/{guild_id}/roles"
+    url = f"https://discord.com/api/v10/guilds/{guild_id}/roles/{role_id}"
 
     response = requests.get(
         url,
@@ -71,32 +66,26 @@ def get_role_permissions(role_id):
 
     if response.status_code != 200:
         return jsonify({
-            "error": "Could not get Discord roles",
-            "status": response.status_code
+            "error": "Discord could not find this role",
+            "discord_status": response.status_code,
+            "role_id_received": role_id,
+            "guild_id_used": guild_id
         }), response.status_code
 
-    roles = response.json()
+    role = response.json()
+    permission_number = int(role["permissions"])
 
-    for role in roles:
-        if role["id"] == role_id:
-            permission_number = int(role["permissions"])
-
-            names = [
-                name
-                for value, name in PERMISSIONS.items()
-                if permission_number & value
-            ]
-
-            return jsonify({
-                "role_id": role["id"],
-                "role_name": role["name"],
-                "permissions": names
-            })
+    names = [
+        name
+        for value, name in PERMISSIONS.items()
+        if permission_number & value
+    ]
 
     return jsonify({
-        "error": "Role not found"
-    }), 404
-
+        "role_id": role["id"],
+        "role_name": role["name"],
+        "permissions": names
+    })
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
