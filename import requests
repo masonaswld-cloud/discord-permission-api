@@ -1,0 +1,11 @@
+@app.route("/twitter")
+def twitter():
+    usernames = request.args.getlist("username")
+
+    if len(usernames) > 3:
+        return {"error": "You can only follow up to 3 usernames"}, 400
+
+    return {
+        "usernames": usernames,
+        "count": len(usernames)
+    }
